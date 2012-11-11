@@ -1,0 +1,8 @@
+Very much unusable at the moment. And on top of that, no API is
+considered stable, and I will probably change very fundamental
+stuff before 0.1 release.
+
+I'm happy to take design feedback. I'm thinking about writing a
+simple script that utilizes the module in some way, to make sure
+the API feels natural and is usable. Until then, you can look at
+t/02-hls.t for how it's supposed to be used.

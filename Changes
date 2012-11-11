@@ -1,0 +1,10 @@
+Media::HLS 0.1, <unreleased>
+
+ * Initial release.
+
+ * Targeted features / release criteria:
+   - Basic HLS client functionality.
+   - Be able to use this in a script for viewing svtplay
+     videos in mplayer.
+
+-- Olof Johansson <olof@cpan.org>
