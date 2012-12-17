@@ -34,8 +34,7 @@ sub test_uri {
 # Each element in this URI is a "sub playlist" (EXT-X-STREAM-INF).
 # It contains no other M3UE fields than EXTM3U and EXT-X-STREAM-INF.
 test_uri(
-	'http://example.com/test.m3u8',
-	{
+	'http://example.com/test.m3u8' => {
 		# If no EXT-X-VERSION is in the playlist, 1 must be assumed
 		version => 1,
 
@@ -47,8 +46,7 @@ test_uri(
 # This is actually one of the sub playlists of the previos test case.
 # Its entries are actually the chunks of the video stream.
 test_uri(
-	'http://example.com/test_0.m3u8',
-	{
+	'http://example.com/test_0.m3u8' => {
 		version => 2,
 		cache => 1,
 	}
