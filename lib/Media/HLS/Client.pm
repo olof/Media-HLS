@@ -6,6 +6,7 @@ use strict;
 use Method::Signatures::Simple;
 use Readonly;
 use LWP::UserAgent;
+use Parse::M3U::Extended qw(m3u_parser);
 
 Readonly our $Supports => 4;
 
@@ -62,48 +63,25 @@ method __fetch {
 	return $resp->decoded_content;
 }
 
-method __set_hls_version {
-	my $line = shift;
-	$self->{version} = $1 if $line =~ /^#EXT-X-VERSION:([0-9]+)$/;
-}
+method __analyze_m3ue {
+	for my $line (@_) {
+		my $type = $line->{type};
+		next if $type eq 'comment';
 
-method __set_hls_cache {
-	my $line = shift;
+		if ($type eq 'directive') {
+			my $tag = $line->{tag};
 
-	# Default is yes. Only way to disable is this exact string.
-	$self->{cache} = 0 if $line eq '#EXT-X-CACHE:NO';
-}
-
-method __parse_m3ue {
-	my %dispatch = (
-		'EXT-X-VERSION' => method { $self->__set_hls_version(@_) },
-		'EXT-X-CACHE' => method { $self->__set_hls_cache(@_) },
-	);
-
-	while (@_) {
-		local $_ = shift;
-
-		next if /^#(?!EXT)/; # ignore comments
-		if (my ($directive) = /^#(EXT[^:]+)/) {
-			$dispatch{$directive}->($self, $_, \@_)
-				if exists $dispatch{$directive};
-
-			# Spec defines that unknown directives
-			# should be ignored.
+			$self->{cache} = $line->{value} eq 'NO' ? 0 : 1 if
+				$tag eq 'EXT-X-ALLOW-CACHE';
+			$self->{version} = $line->{value} if
+				$tag eq 'EXT-X-VERSION';
 		}
 	}
 }
 
 method __load {
 	my $playlist = $self->__fetch or return;
-
-	my ($head, @m3u) = split /\n/, $playlist;
-	if ($head ne '#EXTM3U') {
-		$self->__err('URI is not an M3UE file (so not an HLS stream)');
-		return;
-	}
-
-	$self->__parse_m3ue(@m3u);
+	$self->__analyze_m3ue(m3u_parser($playlist));
 }
 
 =head1 NAME
