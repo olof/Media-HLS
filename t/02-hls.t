@@ -19,7 +19,7 @@ sub test_uri {
 	SKIP: {
 		skip 'HLS failed: ' . $hls->error, 2 if $hls->status eq 'error';
 		is(
-			$hls->version, $ref->{version}, 
+			$hls->version, $ref->{version},
 			"Stream is version $ref->{version}"
 		);
 
