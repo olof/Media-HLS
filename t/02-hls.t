@@ -15,7 +15,7 @@ sub test_uri {
 	note "Testing $uri";
 	my $hls = new_ok('Media::HLS::Client' => [ uri => $uri ]);
 
-	is($hls->status, 'ok', 'Successful HLS request');
+	is($hls->status, $ref->{status} // 'ok', 'Successful HLS request');
 
 	SKIP: {
 		skip 'HLS failed: ' . $hls->error, 2 if $hls->status eq 'error';
