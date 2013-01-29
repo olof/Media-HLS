@@ -30,6 +30,7 @@ has status => (
 
 has error => (
 	is => 'rwp',
+	trigger => sub { my $s = shift; $s->_set_status('error') },
 );
 
 
@@ -48,7 +49,7 @@ sub __fetch {
 	my $resp = $ua->get($self->uri);
 
 	if (! $resp->is_success) {
-		$self->__error(
+		$self->_set_error(
 			sprintf 'Could not fetch url (%s)', $resp->status_line
 		);
 		return;
@@ -57,13 +58,6 @@ sub __fetch {
 	return $resp->decoded_content;
 }
 
-sub __error {
-	my $self = shift;
-	my $msg = shift;
-
-	$self->_set_status('error');
-	$self->_set_error($msg);
-}
 
 sub __analyze_m3ue {
 	my $self = shift;
