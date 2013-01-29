@@ -38,6 +38,21 @@ sub test_valid_hls {
 			'Stream is allowed to be cached'   :
 			'Stream is NOT allowed to be cached'
 	));
+
+	my $has_variants = $ref->{variants} && @{$ref->{variants}};
+	is($hls->variants ? 1 : 0, $has_variants ? 1 : 0, $has_variants ?
+		'Playlist has variants' : 'Playlist does not have variants'
+	);
+
+	SKIP: {
+		skip 'Not a variant playlist', 1 unless $has_variants;
+
+		is(
+			int $hls->variants,
+			int @{$ref->{variants}},
+			'Number of variants'
+		);
+	}
 }
 
 # Each element in this URI is a "sub playlist" (EXT-X-STREAM-INF).
@@ -49,6 +64,45 @@ test_uri(
 
 		# Cache=YES is implicit
 		cache => 1,
+
+		variants => [
+			{
+				'http://example.com/test_0.m3u8' => {
+					version => 2,
+					cache => 1,
+				},
+			},
+			{
+				'http://example.com/test_1.m3u8' => {
+					version => 2,
+					cache => 1,
+				},
+			},
+			{
+				'http://example.com/test_2.m3u8' => {
+					version => 2,
+					cache => 1,
+				},
+			},
+			{
+				'http://example.com/test_3.m3u8' => {
+					version => 2,
+					cache => 1,
+				},
+			},
+			{
+				'http://example.com/test_4.m3u8' => {
+					version => 2,
+					cache => 1,
+				},
+			},
+			{
+				'http://example.com/test_5.m3u8' => {
+					version => 2,
+					cache => 1,
+				},
+			},
+		],
 	}
 );
 
