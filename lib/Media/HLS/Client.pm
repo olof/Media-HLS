@@ -23,6 +23,10 @@ has uri => (
 	is => 'ro',
 );
 
+has variants => (
+	is => 'lazy',
+);
+
 has status => (
 	is => 'rwp',
 	default => sub { 'ok' },
@@ -36,6 +40,9 @@ has error => (
 
 sub BUILD {
 	my $self = shift;
+
+	$self->{__variants} = [];
+
 	my $m3u = $self->__fetch();
 	my $hls = $self->__load($m3u);
 }
@@ -58,6 +65,20 @@ sub __fetch {
 	return $resp->decoded_content;
 }
 
+sub _build_variants {
+	my $self = shift;
+	return @{$self->{__variants}};
+}
+
+sub __handle_variant {
+	my $self = shift;
+	my $line = shift;
+	my $v_tok = shift;
+	push @{$self->{__variants}}, Media::HLS::Client->new(
+		uri => $v_tok->{value},
+	);
+}
+
 sub __set_cache {
 	my $self = shift;
 	my $line = shift;
@@ -74,6 +95,7 @@ sub __analyze_m3ue {
 	my $self = shift;
 
 	my %tagcb = (
+		'EXT-X-STREAM-INF' => sub { $self->__handle_variant(@_) },
 		'EXT-X-ALLOW-CACHE' => sub { $self->__set_cache(@_) },
 		'EXT-X-VERSION' => sub { $self->__set_version(@_) },
 	);
@@ -124,6 +146,10 @@ EXT-X-VERSION field in HLS.
 =head2 cache
 
 Is this media allowed to be cached? Corresponds to the EXT-X-
+
+=head2 variants
+
+Returns the variants as Media::HLS::Client objects, if any.
 
 =head2 status
 
