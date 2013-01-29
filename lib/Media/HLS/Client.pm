@@ -58,21 +58,33 @@ sub __fetch {
 	return $resp->decoded_content;
 }
 
+sub __set_cache {
+	my $self = shift;
+	my $line = shift;
+	$self->_set_cache(not $line->{value} eq 'NO');
+}
+
+sub __set_version {
+	my $self = shift;
+	my $line = shift;
+	$self->_set_version($line->{value});
+}
 
 sub __analyze_m3ue {
 	my $self = shift;
 
-	for my $line (@_) {
+	my %tagcb = (
+		'EXT-X-ALLOW-CACHE' => sub { $self->__set_cache(@_) },
+		'EXT-X-VERSION' => sub { $self->__set_version(@_) },
+	);
+
+	while (my $line = shift) {
 		my $type = $line->{type};
 		next if $type eq 'comment';
 
 		if ($type eq 'directive') {
 			my $tag = $line->{tag};
-
-			$self->_set_cache($line->{value} eq 'NO' ? 0 : 1) if
-				$tag eq 'EXT-X-ALLOW-CACHE';
-			$self->_set_version($line->{value}) if
-				$tag eq 'EXT-X-VERSION';
+			$tagcb{$tag}->($line, @_) if exists $tagcb{$tag};
 		}
 	}
 }
