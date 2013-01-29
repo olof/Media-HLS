@@ -13,8 +13,7 @@ WriteMakefile (
 
 	PREREQ_PM => {
 		'LWP::UserAgent' => 0,
-		'Method::Signatures::Simple' => 0,
-		'Readonly' => 0,
+		'Moo' => 0,
 		'Parse::M3U::Extended' => 0.1,
 	},
 );

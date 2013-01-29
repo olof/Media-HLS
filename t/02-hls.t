@@ -6,7 +6,7 @@ use Test::More;
 
 BEGIN { use_ok 'Media::HLS::Client' }
 
-is($Media::HLS::Client::Supports, 4, 'Implements HLS version 4');
+is(Media::HLS::Client::supports, 4, 'Implements HLS version 4');
 
 sub test_uri {
 	my $uri = shift;

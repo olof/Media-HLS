@@ -11,7 +11,7 @@ if($@) {
 	plan skip_all => 'Test::Distribution is not installed';
 } else {
 	Test::Distribution->import(
-		podcoveropts => { trustme => [qw/new/] },
+		podcoveropts => { trustme => [qw/new BUILD/] },
 	);
 }
 

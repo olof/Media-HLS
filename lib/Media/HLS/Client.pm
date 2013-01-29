@@ -3,55 +3,49 @@ our $VERSION = 0.1;
 use 5.010;
 use warnings;
 use strict;
-use Method::Signatures::Simple;
-use Readonly;
+use Moo;
 use LWP::UserAgent;
 use Parse::M3U::Extended qw(m3u_parser);
 
-Readonly our $Supports => 4;
+sub supports { return 4 }
 
-sub new {
-	my $class = shift;
-	my %args = @_;
-	my $self = bless {
-		version => 1,
-		status => 'ok',
-		cache => 1,
-		error => 'success',
-		uri => $args{uri},
-	}, $class;
+has version => (
+	is => 'rwp',
+	default => sub { 1 },
+);
 
-	$self->__load();
-	return $self;
+has cache => (
+	is => 'rwp',
+	default => sub { 1 },
+);
+
+has uri => (
+	is => 'ro',
+);
+
+has status => (
+	is => 'rwp',
+	default => sub { 'ok' },
+);
+
+has error => (
+	is => 'rwp',
+);
+
+
+sub BUILD {
+	my $self = shift;
+	my $m3u = $self->__fetch();
+	my $hls = $self->__load($m3u);
 }
 
-method version {
-	return $self->{version};
-}
-
-method cache {
-	return $self->{cache};
-}
-
-method status {
-	return $self->{status};
-}
-
-method error {
-	return $self->{error};
-}
-
-method __error {
-	$self->{error} = shift;
-	$self->{status} = 'error';
-}
-
-method __fetch {
+sub __fetch {
+	my $self = shift;
 	my $ua = LWP::UserAgent->new();
 	$ua->timeout(10);
 	$ua->env_proxy;
 
-	my $resp = $ua->get($self->{uri});
+	my $resp = $ua->get($self->uri);
 
 	if (! $resp->is_success) {
 		$self->__error(
@@ -63,7 +57,17 @@ method __fetch {
 	return $resp->decoded_content;
 }
 
-method __analyze_m3ue {
+sub __error {
+	my $self = shift;
+	my $msg = shift;
+
+	$self->_set_status('error');
+	$self->_set_error($msg);
+}
+
+sub __analyze_m3ue {
+	my $self = shift;
+
 	for my $line (@_) {
 		my $type = $line->{type};
 		next if $type eq 'comment';
@@ -71,17 +75,18 @@ method __analyze_m3ue {
 		if ($type eq 'directive') {
 			my $tag = $line->{tag};
 
-			$self->{cache} = $line->{value} eq 'NO' ? 0 : 1 if
+			$self->_set_cache($line->{value} eq 'NO' ? 0 : 1) if
 				$tag eq 'EXT-X-ALLOW-CACHE';
-			$self->{version} = $line->{value} if
+			$self->_set_version($line->{value}) if
 				$tag eq 'EXT-X-VERSION';
 		}
 	}
 }
 
-method __load {
-	my $playlist = $self->__fetch or return;
-	$self->__analyze_m3ue(m3u_parser($playlist));
+sub __load {
+	my $self = shift;
+	my $m3u = shift;
+	$self->__analyze_m3ue(m3u_parser($m3u));
 }
 
 =head1 NAME
@@ -100,6 +105,10 @@ according to the HLS specification (version 4), as defined in [1].
  );
 
 =head1 METHODS
+
+=head2 uri
+
+Returns the URI (as supplied in the constructor).
 
 =head2 version
 
@@ -122,6 +131,13 @@ is undefined.
 
 If status is 'ok', returns the error message. Otherwise, returns the
 string 'success'.
+
+=head1 FUNCTIONS
+
+=head2 supports
+
+Returns the highest HLS version supported by the module. (Currently
+4). Can be called as a method or as a function.
 
 =head1 REFERENCES
 
