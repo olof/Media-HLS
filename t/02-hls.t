@@ -12,6 +12,7 @@ sub test_uri {
 	my $uri = shift;
 	my $ref = shift;
 
+	note "Testing $uri";
 	my $hls = new_ok('Media::HLS::Client' => [ uri => $uri ]);
 
 	is($hls->status, 'ok', 'Successful HLS request');
