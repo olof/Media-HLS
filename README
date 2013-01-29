@@ -6,3 +6,9 @@ I'm happy to take design feedback. I'm thinking about writing a
 simple script that utilizes the module in some way, to make sure
 the API feels natural and is usable. Until then, you can look at
 t/02-hls.t for how it's supposed to be used.
+
+Also, currently affected by:
+
+ https://rt.cpan.org/Ticket/Display.html?id=60109
+
+(Regexp::Grammars triggers segfault bug in Perl.)
