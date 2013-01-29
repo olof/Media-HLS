@@ -20,17 +20,24 @@ sub test_uri {
 
 	SKIP: {
 		skip 'HLS failed: ' . $hls->error, 2 if $hls->status eq 'error';
-		is(
-			$hls->version, $ref->{version},
-			"Stream is version $ref->{version}"
-		);
-
-		is(
-			$hls->cache, $ref->{cache}, ($ref->{cache} ?
-				'Stream is allowed to be cached'   :
-				'Stream is NOT allowed to be cached'
-		));
+		test_valid_hls($hls, $ref);
 	}
+}
+
+sub test_valid_hls {
+	my $hls = shift;
+	my $ref = shift;
+
+	is(
+		$hls->version, $ref->{version},
+		"Stream is version $ref->{version}"
+	);
+
+	is(
+		$hls->cache, $ref->{cache}, ($ref->{cache} ?
+			'Stream is allowed to be cached'   :
+			'Stream is NOT allowed to be cached'
+	));
 }
 
 # Each element in this URI is a "sub playlist" (EXT-X-STREAM-INF).
